@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COVID-19 Prediction</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold text-center mb-6">COVID-19 Positive Likelihood Prediction</h1>
+        <div class="max-w-lg mx-auto bg-white p-6 rounded-lg shadow-md">
+        <h2>Please fill in the form below to predict the likelihood of being COVID-19 positive.</h2>
+        <em> Note that this is just a prediction and not a definitive diagnosis.</em>
+            <form id="prediction-form" class="space-y-4">
+                <div>
+                    <label for="Sex" class="block text-sm font-medium text-gray-700">Sex</label>
+                    <select id="Sex" name="Sex" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Male</option>
+                        <option value="0">Female</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Fever" class="block text-sm font-medium text-gray-700">Fever</label>
+                    <select id="Fever" name="Fever" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Cough" class="block text-sm font-medium text-gray-700">Cough</label>
+                    <select id="Cough" name="Cough" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Headache" class="block text-sm font-medium text-gray-700">Headache</label>
+                    <select id="Headache" name="Headache" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Runny nose" class="block text-sm font-medium text-gray-700">Runny Nose</label>
+                    <select id="Runny nose" name="Runny nose" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Difficulty breathing or Dyspnea" class="block text-sm font-medium text-gray-700">Difficulty Breathing or Dyspnea</label>
+                    <select id="Difficulty breathing or Dyspnea" name="Difficulty breathing or Dyspnea" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Fatigue or general weakness" class="block text-sm font-medium text-gray-700">Fatigue or General Weakness</label>
+                    <select id="Fatigue or general weakness" name="Fatigue or general weakness" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Nausea" class="block text-sm font-medium text-gray-700">Nausea</label>
+                    <select id="Nausea" name="Nausea" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Diarrhea" class="block text-sm font-medium text-gray-700">Diarrhea</label>
+                    <select id="Diarrhea" name="Diarrhea" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Chest pain" class="block text-sm font-medium text-gray-700">Chest Pain</label>
+                    <select id="Chest pain" name="Chest pain" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="Vomiting" class="block text-sm font-medium text-gray-700">Vomiting</label>
+                    <select id="Vomiting" name="Vomiting" class="mt-1 block w-full p-2 border rounded-md" required>
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white p-2 rounded-md hover:bg-blue-700">Predict</button>
+            </form>
+            <div id="result" class="mt-4 text-center"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('prediction-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch('/predict', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`Server error: ${response.status} - ${errorText || 'Unknown error'}`);
+                }
+
+                const contentType = response.headers.get('content-type');
+                if (!contentType || !contentType.includes('application/json')) {
+                    throw new Error('Invalid response: Expected JSON');
+                }
+
+                const result = await response.json();
+
+                if (result.error) {
+                    document.getElementById('result').innerHTML = `<p class="text-red-600">Error: ${result.error}</p>`;
+                } else {
+                    document.getElementById('result').innerHTML = `<p class="text-green-600">${result.message}</p>`;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = `<p class="text-red-600">Error: ${error.message}</p>`;
+            }
+        });
+    </script>
+</body>
+</html>
